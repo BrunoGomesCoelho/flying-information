@@ -26,6 +26,8 @@ BASE_WASHER_PAGE = "https://www.magazineluiza.com.br/\
 REFRIGERATOR_PAGES_COUNT = 6
 WASHER_PAGES_COUNT = 5
 
+HEADERS = ["Code", "Title", "Brand", "Model", "Price", "Category"]
+
 
 class Appliance(object):
     """
@@ -74,20 +76,21 @@ def get_product_info(product):
 
     try:
         # Follow the link of the product since we want the model and it
-        #   freqeuently can't be found on the search
+        #   frequently can't be found on the search
         product_soup = connect(product_link)
         product_model = product_soup.find("table", {"class": "description__box--wildSand"})\
                         .find("tr").find_all("td")[1].find_all("table")[2]\
                         .find_all("td")[1].text
         product_model = product_model.strip()  # Remove white spaces
         info_dict["model"] = product_model
+        # If we dont find the model, use the reference since it may contain the model
+        return True, Appliance(code=int(info_dict["product"]), title=info_dict["title"],
+                         brand=info_dict["brand"], model=info_dict["model"],
+                         price=info_dict["price"], category=info_dict["category"])
+
     except:
         ERROR_MESSAGES.append("No model information found for {}".format(product_link))
-
-    # If we dont find the model, use the reference since it may contain the model
-    return Appliance(code=int(info_dict["product"]), title=info_dict["title"],
-                     brand=info_dict["brand"], model=info_dict["model"],
-                     price=info_dict["price"], category=info_dict["category"])
+        return False, None
 
 
 def scrape_product(page, count):
@@ -108,13 +111,16 @@ def scrape_product(page, count):
 
         for product in product_list:
             # Json converts our string mess into a easy to use dictionary
-            items.append(get_product_info(product))
+            valid, item = get_product_info(product)
+            if valid:
+                items.append(item)
     return items
 
 
 def save_product(file_name, product_list):
     with open(file_name, "w", newline="") as csvfile:
         content_writer = csv.writer(csvfile)
+        content_writer.writerow(HEADERS)
         for item in product_list:
             content_writer.writerow([str(x) for x in item.get_customer_info()])
 

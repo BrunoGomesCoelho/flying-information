@@ -16,5 +16,19 @@ At the very end, the theorical questions were answered and can be found on answe
 
 General comments/choices can be found on [notes.md](https://github.com/BrunoGomesCoelho/flying-information/blob/master/notes.md)
 
-# Requirements:
+# Code structure
+All the scraping is done with the help of scraping.py and the model trained and tested in learn_category.py
+
+# Requirements
 python3 and the following packages: XGBoost, pandas, sklearn, json, urllib3, bs4
+
+# Running
+First run
+> python3 scraping.py
+
+if you would like to re-scrape/create the csv files.Then
+
+> python3 learn_category.py
+
+to train a model and predict, outputting the accuracy.
+

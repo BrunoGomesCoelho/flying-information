@@ -11,6 +11,9 @@ from bs4 import BeautifulSoup
 
 
 ERROR_MESSAGES = []
+ERROR_FILE = "errors.txt"
+WARNINGS = []
+WARNINGS_FILE = "warnings.txt"
 
 # Use a better name for sys function
 PROGRAM_CURRENT_LINE = sys._getframe().f_lineno
@@ -43,8 +46,8 @@ class Appliance(object):
         self.category = category
 
     def get_customer_info(self):
-        return str(self.code), "\"" + self.title + "\"", self.brand,\
-                   self.model, self.price, self.category
+        return str(self.code), "\"" + self.title + "\"", "\"" + self.brand + "\"",\
+                   "\"" + self.model + "\"", self.price, self.category
 
     def __str__(self):
         return ", ".join(self.get_customer_info())
@@ -72,6 +75,8 @@ def connect(url):
 def get_product_info(product):
     # Json converts our string mess into a easy to use dictionary
     info_dict = json.loads(product.find("a")["data-product"])
+    # In case we don't find the model, use the reference instead
+    info_dict["model"] = info_dict["reference"]
     product_link = product.find("a")["href"]
 
     try:
@@ -80,17 +85,16 @@ def get_product_info(product):
         product_soup = connect(product_link)
         product_model = product_soup.find("table", {"class": "description__box--wildSand"})\
                         .find("tr").find_all("td")[1].find_all("table")[2]\
-                        .find_all("td")[1].text
-        product_model = product_model.strip()  # Remove white spaces
-        info_dict["model"] = product_model
-        # If we dont find the model, use the reference since it may contain the model
-        return True, Appliance(code=int(info_dict["product"]), title=info_dict["title"],
-                         brand=info_dict["brand"], model=info_dict["model"],
-                         price=info_dict["price"], category=info_dict["category"])
-
+                        .find_all("td")
+        if "Modelo" in product_model[0].text and len(product_model[1].text) < 20:
+            info_dict["model"] = "\"" + product_model.strip() + "\""
     except:
-        ERROR_MESSAGES.append("No model information found for {}".format(product_link))
-        return False, None
+        WARNINGS.append("No model information found for {}".format(product_link)\
+                        + "\nUsing the reference instead\n\n")
+
+    return Appliance(code=int(info_dict["product"]), title=info_dict["title"],
+                     brand=info_dict["brand"], model=info_dict["model"],
+                     price=info_dict["price"], category=info_dict["category"])
 
 
 def scrape_product(page, count):
@@ -110,10 +114,7 @@ def scrape_product(page, count):
         product_list = product_list[:-1]
 
         for product in product_list:
-            # Json converts our string mess into a easy to use dictionary
-            valid, item = get_product_info(product)
-            if valid:
-                items.append(item)
+            items.append(get_product_info(product))
     return items
 
 
@@ -133,10 +134,19 @@ def main():
     save_product("washers.csv", washers)
 
     print("{} refrigerators and {} washers were scraped!".format(
-        len(refrigerators), len(washers)))
+          len(refrigerators), len(washers)))
 
-    print("{} errors were found".format(len(ERROR_MESSAGES)))
+    print("{} warnings were found. View them in the {} file.".format(
+          len(WARNINGS), WARNINGS_FILE))
+    print("{} errors were found. You can also view them in the {} file.".format(
+        len(ERROR_MESSAGES), ERROR_FILE))
     print(*ERROR_MESSAGES, sep="\n")
+
+    with open(ERROR_FILE, "w") as outfile:
+        outfile.write("\n".join(ERROR_MESSAGES))
+
+    with open(WARNINGS_FILE, "w") as outfile:
+        outfile.write("\n".join(WARNINGS))
 
 
 if __name__ == "__main__":

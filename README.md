@@ -12,7 +12,7 @@ Then a XGBoost model was trained to predict this new category.
 
 The end result was in average a **97.5% accuracy.**
 
-At the very end, the theorical questions were answered and can be found on answers.md
+At the very end, the theorical questions were answered and can be found on [answers.md](https://github.com/BrunoGomesCoelho/flying-information/blob/master/answers.md)
 
 General comments/choices can be found on [notes.md](https://github.com/BrunoGomesCoelho/flying-information/blob/master/notes.md)
 

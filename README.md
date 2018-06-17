@@ -17,10 +17,12 @@ At the very end, the theorical questions were answered and can be found on [answ
 General comments/choices can be found on [notes.md](https://github.com/BrunoGomesCoelho/flying-information/blob/master/notes.md)
 
 # Code structure
-All the scraping is done with the help of scraping.py and the model trained and tested in learn_category.py
+All the scraping is done with the help of `scraping.py` and the model trained and tested in `learn_category.py`
 
 # Requirements
 python3 and the following packages: XGBoost, pandas, sklearn, json, urllib3, bs4
+
+All of them should be easily instalable with `pip3 install PACKAGE` if not already present.
 
 # Running
 First run
